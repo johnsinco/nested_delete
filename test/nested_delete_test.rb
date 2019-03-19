@@ -25,7 +25,8 @@ class NestedDeleteTest < Minitest::Test
 
   def test_it_deletes_nothing
     hash = {one: '1', two: '2', three: '3'}
-    assert_equal hash, hash.nested_delete!(nil)
+    hash.nested_delete!(nil)
+    assert_equal hash, {one: '1', two: '2', three: '3'}
   end
 
   def test_it_deletes_second_level_hash_key
@@ -33,6 +34,26 @@ class NestedDeleteTest < Minitest::Test
     parent = {foo: 'bar', child: child}
     expected = {foo: 'bar', child: {two: '2'}}
     assert_equal expected, parent.nested_delete!(:one, :three)
+    assert_equal expected, parent
+  end
+
+  def test_it_works_for_arrays
+    ary = [{one: 1}, {two: 2}]
+    ary.nested_delete!(:one)
+    assert_equal [{two: 2}], ary
+  end
+
+  def test_it_works_for_mix_of_arrays_and_hashes
+    mix = {
+      :one => 'one',
+      :ary => ["foo", {bar: 'baz'}, {nest: [7, {one: 1}], keep: 'this'}, {}],
+      "str" => "works"
+    }
+    expected = {
+      ary: ["foo", {nest: [7], keep: 'this'}]
+    }
+    mix.nested_delete!(:one, :bar, "str")
+    assert_equal expected, mix
   end
 
 end
